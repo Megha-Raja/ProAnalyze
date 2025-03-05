@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Github, FileCode, Loader2, Box, Code2, Cpu, Workflow, Users, Lightbulb } from 'lucide-react';
+import { Github, FileCode, Loader2, Box, Code2, Cpu, Workflow, Users, Lightbulb, Star, ArrowUpCircle } from 'lucide-react';
 import { parseRepoUrl, fetchRepositoryData } from './services/github';
 import { analyzeCode } from './services/analysis';
 import type { RepositoryData } from './types';
@@ -137,11 +137,11 @@ function App() {
                   }} />
                 </AnalysisSection>
 
-                <AnalysisSection title="Workflow" icon={Workflow}>
+                <AnalysisSection title="Project Workflow" icon={Workflow}>
                   <div dangerouslySetInnerHTML={{ 
-                    __html: parseAnalysisSection(data.analysis, 'Code Structure')
+                    __html: parseAnalysisSection(data.analysis, 'Project Workflow')
                       .split('\n')
-                      .map(line => `<p>${line}</p>`)
+                      .map(line => line.startsWith('-') || /^\d+\./.test(line) ? `<li>${line.replace(/^\d+\.\s*/, '')}</li>` : `<p>${line}</p>`)
                       .join('')
                   }} />
                 </AnalysisSection>
@@ -150,16 +150,25 @@ function App() {
                   <div dangerouslySetInnerHTML={{ 
                     __html: parseAnalysisSection(data.analysis, 'Implementation Details')
                       .split('\n')
-                      .map(line => `<p>${line}</p>`)
+                      .map(line => line.startsWith('-') ? `<li>${line.slice(1)}</li>` : `<p>${line}</p>`)
                       .join('')
                   }} />
                 </AnalysisSection>
 
-                <AnalysisSection title="Areas of Improvement" icon={Lightbulb}>
+                <AnalysisSection title="Project Strengths" icon={Star}>
                   <div dangerouslySetInnerHTML={{ 
-                    __html: parseAnalysisSection(data.analysis, 'Complexity & Maintainability')
+                    __html: parseAnalysisSection(data.analysis, 'Project Strengths')
                       .split('\n')
-                      .map(line => `<p>${line}</p>`)
+                      .map(line => line.startsWith('-') ? `<li>${line.slice(1)}</li>` : `<p>${line}</p>`)
+                      .join('')
+                  }} />
+                </AnalysisSection>
+
+                <AnalysisSection title="Areas for Improvement" icon={ArrowUpCircle}>
+                  <div dangerouslySetInnerHTML={{ 
+                    __html: parseAnalysisSection(data.analysis, 'Areas for Improvement')
+                      .split('\n')
+                      .map(line => line.startsWith('-') ? `<li>${line.slice(1)}</li>` : `<p>${line}</p>`)
                       .join('')
                   }} />
                 </AnalysisSection>
