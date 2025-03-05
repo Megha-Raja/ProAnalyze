@@ -5,7 +5,7 @@ const CONFIG = {
   model: {
     url: 'https://api.together.xyz/v1/chat/completions',
     name: 'mistralai/Mixtral-8x7B-Instruct-v0.1',
-    maxTokens: 2048
+    maxTokens: 4096
   },
   maxFiles: 5,
   maxFileSize: 2000,
@@ -38,9 +38,10 @@ function formatAnalysis(analysis: string): string {
     'Project Overview',
     'Key Features',
     'Libraries & Dependencies',
-    'Code Structure',
+    'Project Workflow',
     'Implementation Details',
-    'Complexity & Maintainability'
+    'Project Strengths',
+    'Areas for Improvement'
   ];
 
   let formatted = analysis.trim();
@@ -48,22 +49,41 @@ function formatAnalysis(analysis: string): string {
   // Remove any potential system or assistant markers
   formatted = formatted.replace(/^(system|assistant|user):\s*/gmi, '').trim();
 
-  // Ensure proper section headers
+  // Extract existing sections and ensure they're not empty
+  const existingSections: Record<string, string> = {};
   sections.forEach(section => {
-    if (!formatted.includes(`## ${section}`)) {
-      formatted += `\n\n## ${section}\nNo information available.`;
+    const regex = new RegExp(`## ${section}\\n([\\s\\S]*?)(?=## |$)`);
+    const match = formatted.match(regex);
+    if (match && match[1].trim()) {
+      existingSections[section] = match[1].trim();
     }
   });
+
+  // If critical sections are missing or empty, mark for reanalysis
+  const criticalSections = ['Project Workflow', 'Project Strengths', 'Areas for Improvement'];
+  const missingCritical = criticalSections.some(section => !existingSections[section]);
+
+  if (missingCritical) {
+    console.log('Critical sections missing, triggering reanalysis');
+    return '';  // This will trigger a retry
+  }
+
+  // Rebuild the analysis with all sections
+  formatted = sections.map(section => {
+    const content = existingSections[section] || 'Information not available. Please try analyzing the repository again.';
+    return `## ${section}\n${content}\n`;
+  }).join('\n');
 
   // Clean up formatting
   return formatted
     .split('\n')
     .filter((line, index, arr) => {
-      if (index > 0 && line === arr[index - 1]) return false;
+      if (line.trim() === '' && index > 0 && arr[index - 1].trim() === '') {
+        return false;
+      }
       return true;
     })
-    .join('\n')
-    .replace(/\n{3,}/g, '\n\n');
+    .join('\n');
 }
 
 function generateAnalysisPrompt(files: { name: string; content: string }[]): string {
@@ -83,33 +103,78 @@ function generateAnalysisPrompt(files: { name: string; content: string }[]): str
     .map(file => `### ${file.name}\n\`\`\`python\n${file.content}\n\`\`\``)
     .join('\n\n');
 
-  return `<s>[INST] You are a code analysis expert. Analyze these Python files and provide a detailed technical summary.
+  return `<s>[INST] You are a senior code analysis expert. Analyze these Python files and provide a comprehensive technical summary.
 
 Files to analyze:
 
 ${filesSummary}
 
-Provide your analysis in this exact markdown format:
+You MUST provide a detailed analysis in this exact format, ensuring ALL sections are complete with substantial information:
 
 ## Project Overview
-[Describe the main purpose and goals of the project]
+[Write 2-3 detailed paragraphs explaining:
+- The main purpose and goals of the project
+- The core methodology and approach used
+- The problem it solves and its significance
+Be specific about the project's role and impact.]
 
 ## Key Features
-[List and describe the main functionality]
+[List at least 6-8 main features, with each feature having 2-3 lines of explanation:
+- Feature 1: Detailed description of what it does and how it benefits users
+- Feature 2: Detailed description of what it does and how it benefits users
+(continue with all features)
+Focus on user-facing functionality and technical capabilities.]
 
 ## Libraries & Dependencies
-[List the key Python libraries and dependencies used]
+[List ALL important libraries (at least 5-6) with 2-3 lines about their role:
+- Library 1: Detailed explanation of how it's used in the project and why it's essential
+- Library 2: Detailed explanation of how it's used in the project and why it's essential
+(continue with all libraries)
+Include both direct and indirect dependencies that are crucial.]
 
-## Code Structure
-[Explain how the code is organized]
+## Project Workflow
+[CRITICAL: Provide a detailed, step-by-step explanation of how the project works from start to finish:
+1. Initial Setup: How the system is initialized and configured
+2. User Input: How users interact with the system and what inputs they provide
+3. Processing Flow: How the system processes the inputs and what happens internally
+4. Data Handling: How data flows through different components
+5. Output Generation: How results are calculated and presented
+6. Error Handling: How the system manages errors and edge cases
+
+Each step MUST have 2-3 lines of detailed explanation.
+Focus on the actual user journey and system operation flow.]
 
 ## Implementation Details
-[Describe notable implementation patterns and techniques]
+[List at least 6-7 key technical aspects with detailed explanations:
+- Implementation 1: Detailed explanation of the technical approach and why it was chosen
+- Implementation 2: Detailed explanation of the technical approach and why it was chosen
+(continue with all implementations)
+Include architecture decisions, design patterns, and technical solutions.]
 
-## Complexity & Maintainability
-[Assess code complexity and maintainability]
+## Project Strengths
+[CRITICAL: List at least 5-6 major strengths with detailed explanations:
+- Strength 1: Detailed explanation of why this is a strength and its impact
+- Strength 2: Detailed explanation of why this is a strength and its impact
+(continue with all strengths)
+Focus on technical excellence, user benefits, and project advantages.]
 
-Be specific and technical in your analysis. Focus on code patterns, architecture, and implementation details. [/INST]</s>`;
+## Areas for Improvement
+[CRITICAL: List at least 4-5 specific suggestions for enhancement:
+- Improvement 1: Detailed suggestion for future enhancement or expansion
+- Improvement 2: Detailed suggestion for future enhancement or expansion
+(continue with all improvements)
+Focus ONLY on concrete improvement opportunities and future enhancements.
+Each suggestion MUST include both what to improve and how to improve it.]
+
+CRITICAL REQUIREMENTS:
+1. ALL sections MUST be completed with the minimum number of points specified
+2. Each point MUST have at least 2-3 lines of detailed explanation
+3. The Project Workflow MUST describe the actual step-by-step operation flow
+4. Project Strengths MUST highlight unique advantages and capabilities
+5. Areas for Improvement MUST focus on concrete enhancement opportunities
+6. Use technical language but ensure explanations are clear and specific
+7. DO NOT skip or leave any section empty
+[/INST]</s>`;
 }
 
 async function makeAnalysisRequest(prompt: string, attempt: number) {
@@ -154,7 +219,13 @@ async function makeAnalysisRequest(prompt: string, attempt: number) {
         return null;
       }
 
-      return formatAnalysis(analysis);
+      const formattedAnalysis = formatAnalysis(analysis);
+      if (!formattedAnalysis) {
+        console.log('Critical sections missing, retrying...');
+        return null;
+      }
+
+      return formattedAnalysis;
     }
     
     console.log('Invalid response format:', response.data);
