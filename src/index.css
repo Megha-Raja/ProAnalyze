@@ -1,0 +1,15 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* Ensure embedded Graphviz SVGs are fully visible */
+.diagram-container svg {
+  display: block;
+  max-width: none;
+  height: auto;
+  overflow: visible;
+}
+
+.diagram-container {
+  padding-top: 8px; /* avoid top-cut nodes */
+}
