@@ -1,10 +1,10 @@
 # 🧠 ProAnalyze: AI-Powered GitHub Repository Analyzer
 ProAnalyze is an intelligent analysis tool that leverages large language models to understand and visualize the structure and functionality of public Python repositories on GitHub. It helps users, especially beginners and developers exploring open-source projects, to quickly grasp the essence of any repository—even in the absence of a README.
 
-## 📌 Purpose
+### 📌 Purpose
 The primary goal of ProAnalyze is to simplify the process of understanding GitHub projects by automating code analysis using AI. Instead of spending hours reading source files, users can view a summarized version of the project’s purpose, features, technologies used, implementation logic, and even its workflow in a visual format.
 
-## ✨ Key Features
+### ✨ Key Features
 **🔍 AI-Powered Project Analysis**
 Uses the Mixtral 8x7B model served via Ollama to analyze .py and .ipynb files.
 Extracts insights such as overview, features, technologies used, implementation details, and areas of improvement.
@@ -24,7 +24,7 @@ Fetches files directly for analysis.
 **📄 License Detection**
 Automatically detects the repository’s license (if present) to inform users about usage rights.
 
-## 🛠️ Technologies Used
+### 🛠️ Technologies Used
 - Frontend: TypeScript
 
 - Backend AI Serving: Together AI (Mixtral 8x7B)
@@ -33,7 +33,7 @@ Automatically detects the repository’s license (if present) to inform users ab
 
 - LLM-Based Analysis: Custom prompt engineering for consistent field-wise responses
 
-## 📈 Fields Generated in Analysis
+### 📈 Fields Generated in Analysis
 Each analyzed repository includes the following insights:
 
 **Overview:** A summary of what the project does
@@ -51,7 +51,7 @@ Each analyzed repository includes the following insights:
 **Areas of improvement:** Suggestions for enhancement
 
 
-## 🧩 Use Cases
+### 🧩 Use Cases
 🚀 Students exploring open-source projects for learning
 
 🛠️ Developers trying to contribute to a new repo
@@ -59,3 +59,9 @@ Each analyzed repository includes the following insights:
 📊 Project reviewers looking for a quick code overview
 
 🧪 Hackathon teams doing rapid codebase audits
+
+
+### Steps after cloning
+**Install dependencies**: npm install
+
+**Run the project**: npm run dev
