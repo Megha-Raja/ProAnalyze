@@ -65,3 +65,14 @@ Each analyzed repository includes the following insights:
 **Install dependencies**: npm install
 
 **Run the project**: npm run dev
+## 👥 Contributors & Roles
+
+- Team Lead (Megha raja)
+  • System design and architecture  
+  • AI model integration
+  • Model evaluation and structured outputs
+
+- Mohammad Ammar Bin Zameer (https://github.com/ammar3633)
+  • Data parsing and preprocessing  
+  • Backend integration and testing
+
